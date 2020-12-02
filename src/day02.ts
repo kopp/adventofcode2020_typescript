@@ -31,7 +31,7 @@ function xor(a: boolean, b: boolean): boolean {
 }
 
 // part 1
-function repeats_letter_accepted_number_of_times(line: string): boolean {
+export function repeats_letter_accepted_number_of_times(line: string): boolean {
     let match = line.match(parse_line);
     if (match === null) {
         console.log("Unable to process line ", line);
@@ -49,7 +49,7 @@ function repeats_letter_accepted_number_of_times(line: string): boolean {
 }
 
 // part 2
-function letter_at_exactly_one_indicated_positions(line: string): boolean {
+export function letter_at_exactly_one_indicated_positions(line: string): boolean {
     let match = line.match(parse_line);
     if (match === null) {
         console.log("Unable to process line ", line);
@@ -68,10 +68,10 @@ function letter_at_exactly_one_indicated_positions(line: string): boolean {
 
 
 interface PredicateOnString {
-    (string): boolean;
+    (arg: string): boolean;
 };
 
-function count_if(strings_to_operate_on: string[], predicate: PredicateOnString): number {
+export function count_if(strings_to_operate_on: string[], predicate: PredicateOnString): number {
     var count_predicate_true = 0;
     for (let string_under_evaluation of strings_to_operate_on) {
         if (predicate(string_under_evaluation)) {
@@ -82,25 +82,8 @@ function count_if(strings_to_operate_on: string[], predicate: PredicateOnString)
 }
 
 
-console.log("Tests Part 1");
-let test_input = [
-    "1-3 a: abcde",
-    "1-3 b: cdefg",
-    "2-9 c: ccccccccc",
-];
-console.log(true == repeats_letter_accepted_number_of_times(test_input[0]));
-console.log(false == repeats_letter_accepted_number_of_times(test_input[1]));
-console.log(true == repeats_letter_accepted_number_of_times(test_input[2]));
-console.log(2 == count_if(test_input, repeats_letter_accepted_number_of_times));
-
-console.log("Tests Part 2");
-console.log(true == letter_at_exactly_one_indicated_positions(test_input[0]));
-console.log(false == letter_at_exactly_one_indicated_positions(test_input[1]));
-console.log(false == letter_at_exactly_one_indicated_positions(test_input[2]));
-console.log(1 == count_if(test_input, letter_at_exactly_one_indicated_positions));
-
-console.log("Part 1")
-let problem_input = read_file_of_strings("input_day02a");
-console.log(count_if(problem_input, repeats_letter_accepted_number_of_times));
-console.log("Part 2")
-console.log(count_if(problem_input, letter_at_exactly_one_indicated_positions));
+if (require.main === module) {
+    let problem_input = read_file_of_strings("input/day02");
+    console.log("Part 1: ", count_if(problem_input, repeats_letter_accepted_number_of_times));
+    console.log("Part 2: ", count_if(problem_input, letter_at_exactly_one_indicated_positions));
+}

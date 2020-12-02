@@ -20,6 +20,7 @@ function product_of_two_elements_summing_up_to(input: number[], expected_sum: nu
             }
         }
     }
+    throw new Error("Unable to find numbers umming up to " + expected_sum);
 }
 
 function product_of_three_elements_summing_up_to(input: number[], expected_sum: number): number {
@@ -56,8 +57,8 @@ function product_of_three_elements_summing_up_to(input: number[], expected_sum: 
                 console.log(current_sum, index_small_value, index_intermediate_value, index_large_value);
             }
         }
-
     }
+    throw new Error("Unable to find numbers umming up to " + expected_sum);
 }
 
 
