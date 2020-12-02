@@ -83,7 +83,7 @@ console.log("Test");
 console.log(expected_product_of_two == product_of_two_elements_summing_up_to(input, 2020));
 console.log(expected_product_of_three == product_of_three_elements_summing_up_to(input, 2020));
 
-let data = read_file_of_numbers("input_day01a");
+let data = read_file_of_numbers("input/day01");
 console.log("Solutions");
 console.log(product_of_two_elements_summing_up_to(data, 2020));
 console.log(product_of_three_elements_summing_up_to(data, 2020));
