@@ -4,7 +4,8 @@
         "module": "CommonJS",
         "strict": true,
         "outDir": "out",
-        "sourceMap": true
+        "sourceMap": true,
+        "incremental": true
     },
     "include": ["src/**/*"]
 }
