@@ -7,11 +7,11 @@
         {
             "type": "pwa-node",
             "request": "launch",
-            "name": "tag04",
+            "name": "Current Day",
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/src/day04.ts",
+            "program": "${workspaceFolder}/${relativeFile}",
             "preLaunchTask": "tsc: build - tsconfig.json",
             "outFiles": [
                 "${workspaceFolder}/out/**/*.js"
