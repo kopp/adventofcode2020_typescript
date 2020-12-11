@@ -8,3 +8,7 @@ export function union<T>(a: Iterable<T>, b: Iterable<T>): Set<T> {
 export function intersect<T>(a: Iterable<T>, b: Set<T>): Set<T> {
     return new Set([...a].filter(x => b.has(x)));
 }
+
+export function isEqual<T>(a: Set<T>, b: Set<T>): boolean {
+    return a.size === b.size && [...a].every(value => b.has(value));
+}
