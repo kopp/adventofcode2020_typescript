@@ -2,6 +2,7 @@ import { Dir } from "fs";
 import {
     OnGridMover,
     move_mover_by_script,
+    move_waypoint_and_follower_by_script,
     Direction
 } from "../src/day12";
 
@@ -102,8 +103,16 @@ const input = [
     "F11",
 ]
 
-test("move", () => {
+test("move part 1", () => {
     let mover = new OnGridMover();
     move_mover_by_script(mover, input);
     expect(mover.position).toEqual({x: 17, y: -8});
+});
+
+test("move part 2", () => {
+    let waypoint = new OnGridMover();
+    waypoint.position = {x: 10, y: 1};
+    let follower = new OnGridMover();
+    move_waypoint_and_follower_by_script(waypoint, follower, input);
+    expect(follower.position).toEqual({x: 214, y: -72});
 });
