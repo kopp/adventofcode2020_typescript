@@ -13,8 +13,8 @@ let input: number[] = [
     1456,
 ];
 
-let expected_product_of_two = 514579;
-let expected_product_of_three = 241861950;
+const expected_product_of_two = 514579;
+const expected_product_of_three = 241861950;
 
 test("Example Part 1", () => {
     expect(product_of_two_elements_summing_up_to(input, 2020)).toBe(expected_product_of_two);

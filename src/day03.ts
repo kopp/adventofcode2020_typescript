@@ -14,8 +14,8 @@ export class GridHorizontallyPeriodic
 
     isOccupied(row: number, column: number): boolean
     {
-        let cell = this.data[row][column % this.horizontal_periodicity];
-        let occupied = cell == "#";
+        const cell = this.data[row][column % this.horizontal_periodicity];
+        const occupied = cell == "#";
         return occupied;
     }
 }
@@ -27,9 +27,9 @@ interface Movement {
 }
 
 export function count_occupied_cells_in_movement(grid: GridHorizontallyPeriodic, movement: Movement) : number {
-    var row = 0;
-    var column = 0;
-    var occupied_count = 0;
+    let row = 0;
+    let column = 0;
+    let occupied_count = 0;
     while (row < grid.height) {
         if (grid.isOccupied(row, column)) {
             occupied_count += 1;
@@ -43,7 +43,7 @@ export function count_occupied_cells_in_movement(grid: GridHorizontallyPeriodic,
 
 
 if (require.main === module) {
-    let problem_input = read_file_of_strings("input/day03");
+    const problem_input = read_file_of_strings("input/day03");
     let grid = new GridHorizontallyPeriodic(problem_input);
     console.log("Part 1: ", count_occupied_cells_in_movement(grid, {right: 3, down: 1}));
 

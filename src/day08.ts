@@ -18,7 +18,7 @@ export function parse_instruction(instruction: string): [Instruction, number]
 {
     function parse_argument(instruction: string) : number
     {
-        let match = instruction.match(/^([^ ]+) ([-+]\d+)$/);
+        const match = instruction.match(/^([^ ]+) ([-+]\d+)$/);
         if (match == null) {
             throw new Error(`Unable to parse argument from ${instruction}.`);
         }
@@ -54,7 +54,7 @@ export class Bootloader
 
     execute_instruction_at(index: number): void
     {
-        let [instruction, argument] = parse_instruction(this.code[index]);
+        const [instruction, argument] = parse_instruction(this.code[index]);
         switch (instruction) {
             case Instruction.acc:
                 this.accumulator += argument!;
@@ -73,7 +73,7 @@ export class Bootloader
 
     run(): [TerminationCause, number]
     {
-        var termination_due_to = TerminationCause.SingleStepDone;
+        let termination_due_to = TerminationCause.SingleStepDone;
         while (termination_due_to == TerminationCause.SingleStepDone) {
             termination_due_to = this.run_one_instruction();
         }
@@ -82,13 +82,13 @@ export class Bootloader
 
     peek_next_instruction(): Instruction
     {
-        let [instruction] = parse_instruction(this.code[this.instruction_counter])
+        const [instruction] = parse_instruction(this.code[this.instruction_counter])
         return instruction;
     }
 
     is_next_instruction_toggleable(): boolean
     {
-        let instr = this.peek_next_instruction();
+        const instr = this.peek_next_instruction();
         return (instr == Instruction.nop) || (instr == Instruction.jmp);
     }
 
@@ -99,7 +99,7 @@ export class Bootloader
      */
     toggle_next_instruction(): number
     {
-        let index_toggled = this.instruction_counter;
+        const index_toggled = this.instruction_counter;
         switch (this.peek_next_instruction())
         {
             case Instruction.jmp:
@@ -116,7 +116,7 @@ export class Bootloader
 
     run_one_instruction(): TerminationCause
     {
-        let instruction_no = this.instruction_counter;
+        const instruction_no = this.instruction_counter;
         if (this.executed_instructions.has(instruction_no)) {
             return TerminationCause.InfiniteLoop;
         }
@@ -167,7 +167,7 @@ export function fix_code_to_allow_termination(code: Array<string>): number
             (!instructions_already_toggled.has(bootloader.instruction_counter))
         ) {
             let clone = bootloader.clone();
-            let toggled_at = clone.toggle_next_instruction();
+            const toggled_at = clone.toggle_next_instruction();
             instructions_already_toggled.add(toggled_at);
             let [cause, accumulator] = clone.run();
             if (cause == TerminationCause.EndOfCodeReached) {
@@ -190,7 +190,7 @@ export function fix_code_to_allow_termination(code: Array<string>): number
 
 
 if (require.main === module) {
-    let input = read_file_of_strings("input/day08");
+    const input = read_file_of_strings("input/day08");
 
     let part1_bootloader = new Bootloader(input);
     let part1_solution = part1_bootloader.run();

@@ -41,15 +41,15 @@ class Passport {
 
     constructor(content: Array<string>) {
         for (let key_value_pair of content) {
-            let key_and_value = key_value_pair.split(":");
+            const key_and_value = key_value_pair.split(":");
             assert(key_and_value.length == 2, `Unable to parse key value pair "${key_value_pair}"`);
             this.content.set(key_and_value[0], key_and_value[1]);
         }
     }
 
     is_keys_valid(): boolean {
-        let set_of_keys = new Set(this.content.keys());
-        let has_required_keys = is_subset(Passport.REQUIRED_KEYS, set_of_keys);
+        const set_of_keys = new Set(this.content.keys());
+        const has_required_keys = is_subset(Passport.REQUIRED_KEYS, set_of_keys);
         return has_required_keys;
     }
 
@@ -57,20 +57,20 @@ class Passport {
         if (! this.is_keys_valid()) { return false; }
 
         // byr (Birth Year) - four digits; at least 1920 and at most 2002.
-        let birth_year = parseInt(this.content.get("byr")!);
+        const birth_year = parseInt(this.content.get("byr")!);
         if ((birth_year < 1920) || (birth_year > 2002)) { return false; }
         // iyr (Issue Year) - four digits; at least 2010 and at most 2020.
-        let issue_year = parseInt(this.content.get("iyr")!);
+        const issue_year = parseInt(this.content.get("iyr")!);
         if ((issue_year < 2010) || (issue_year > 2020)) { return false; }
         // eyr (Expiration Year) - four digits; at least 2020 and at most 2030.
-        let expiration_year = parseInt(this.content.get("eyr")!);
+        const expiration_year = parseInt(this.content.get("eyr")!);
         if ((expiration_year < 2020) || (expiration_year > 2030)) { return false; }
         // hgt (Height) - a number followed by either cm or in:
         //    If cm, the number must be at least 150 and at most 193.
         //    If in, the number must be at least 59 and at most 76.
-        let height_cm = parse_number_with_unit(this.content.get("hgt")!, "cm");
+        const height_cm = parse_number_with_unit(this.content.get("hgt")!, "cm");
         if (height_cm === null) {
-            let height_in = parse_number_with_unit(this.content.get("hgt")!, "in");
+            const height_in = parse_number_with_unit(this.content.get("hgt")!, "in");
             if (height_in === null) { return false; } // neither in cm nor in in!
             else {
                 if ((height_in < 59) || (height_in > 76)) { return false; }
@@ -105,7 +105,7 @@ function foreach_passport(data_all_passports: Array<Array<string>>, predicate: P
 
 
 export function count_passports_with_valid_keys(data_all_passports: Array<Array<string>>): number {
-    var count: number = 0;
+    let count: number = 0;
     for (let passport_data of data_all_passports) {
         let passport = new Passport(passport_data);
         if (passport.is_keys_valid()) {
@@ -117,7 +117,7 @@ export function count_passports_with_valid_keys(data_all_passports: Array<Array<
 
 
 export function count_passports_with_valid_values(data_all_passports: Array<Array<string>>): number {
-    var count: number = 0;
+    let count: number = 0;
     for (let passport_data of data_all_passports) {
         let passport = new Passport(passport_data);
         if (passport.is_values_valid()) {
@@ -130,7 +130,7 @@ export function count_passports_with_valid_values(data_all_passports: Array<Arra
 
 
 export function Xcount_passports_with_valid_values(data_all_passports: Array<Array<string>>): number {
-    var count = 0;
+    let count = 0;
     function count_valid_values(passport: Passport) {
         if (passport.is_values_valid()) {
             count += 1;
@@ -142,7 +142,7 @@ export function Xcount_passports_with_valid_values(data_all_passports: Array<Arr
 
 
 if (require.main === module) {
-    let all_passports = read_empty_line_and_whitespace_separated_strings("input/day04");
+    const all_passports = read_empty_line_and_whitespace_separated_strings("input/day04");
     console.log("Part 1: ", count_passports_with_valid_keys(all_passports));
     console.log("Part 2: ", count_passports_with_valid_values(all_passports));
 }
