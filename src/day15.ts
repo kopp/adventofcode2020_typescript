@@ -61,7 +61,7 @@ export class ElveGame
 
     calculate_30000000th_number(): number
     {
-        return this.calculate_nth_number(30000000, true);
+        return this.calculate_nth_number(30000000);
     }
 
 }
