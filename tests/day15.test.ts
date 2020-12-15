@@ -19,3 +19,13 @@ test("2020 examples", () => {
     expect(new ElveGame([3,2,1]).calculate_2020th_number()).toBe(438);
     expect(new ElveGame([3,1,2]).calculate_2020th_number()).toBe(1836);
 });
+
+test("30000000 examples", () => {
+    expect(new ElveGame([0,3,6]).calculate_30000000th_number()).toBe(175594);
+    expect(new ElveGame([1,3,2]).calculate_30000000th_number()).toBe(2578);
+    expect(new ElveGame([2,1,3]).calculate_30000000th_number()).toBe(3544142);
+    expect(new ElveGame([1,2,3]).calculate_30000000th_number()).toBe(261214);
+    expect(new ElveGame([2,3,1]).calculate_30000000th_number()).toBe(6895259);
+    expect(new ElveGame([3,2,1]).calculate_30000000th_number()).toBe(18);
+    expect(new ElveGame([3,1,2]).calculate_30000000th_number()).toBe(362);
+});
