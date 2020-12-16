@@ -15,6 +15,9 @@ export function read_file_of_numbers(filename: string): number[] {
     return numbers;
 }
 
+/**
+ * Return a list of all non-empty strings in the given file.
+ */
 export function read_file_of_strings(filename: string): string[] {
     let content: string = readFileSync(filename,'utf8');
     var strings: string[] = [];
