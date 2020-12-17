@@ -1,5 +1,7 @@
 import {
-    Grid3D,
+    Grid,
+    Point3D,
+    Point4D,
     OccupiedNeighbours,
     parse_grid_from_strings,
     execute_conway_step,
@@ -7,7 +9,7 @@ import {
 
 
 test("Grid: status, neighbours", () => {
-    let grid = new Grid3D();
+    let grid = new Grid(Point3D);
     expect(grid.is_occupied({x: 0, y: 0, z: 0})).toBe(false);
     expect(grid.is_occupied({x: 1, y: 1, z: 1})).toBe(false);
     expect(grid.get_number_of_occupied()).toBe(0);
@@ -47,7 +49,7 @@ test("Grid: status, neighbours", () => {
 
 
 test("Grid: box", () => {
-    let grid = new Grid3D();
+    let grid = new Grid(Point3D);
     grid.set_occupation({x: 0, y: 0, z: 0}, true);
 
     let num_points = 0;
@@ -64,7 +66,7 @@ test("parse and run", () => {
         "..#",
         "###",
     ];
-    const grid = parse_grid_from_strings(input);
+    const grid = parse_grid_from_strings(input, Point3D);
 
     expect(grid.is_occupied({x: 0, y: 0, z: 0})).toBe(false);
     expect(grid.is_occupied({x: 1, y: 0, z: 0})).toBe(true);
