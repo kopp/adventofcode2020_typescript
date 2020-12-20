@@ -1,4 +1,3 @@
-import { tokenize } from "./day18";
 import { read_file_of_strings } from "./read_file_utils";
 
 
@@ -26,7 +25,7 @@ function tokenize_rule(rule: string): string {
 }
 
 
-export function build_regexp_from(rules: Rules): RegExp
+export function build_regexp_from(rules: Rules, include_part2_fixes: boolean = false): RegExp
 {
     function get_rule_no(index: number): string
     {
@@ -43,6 +42,23 @@ export function build_regexp_from(rules: Rules): RegExp
             throw new Error(`Expected tokens to be in <> braces, not ${token}.`);
         }
         const index = parseInt(token.slice(1, token.length));
+        if (include_part2_fixes)
+        {
+            if (index == 8) {
+                // <42> once or multiple times
+                return "(<42>)+";
+            }
+            else if (index == 11) {
+                // n times <42> followed by n times <31>
+                // n = 1, 2, .... -- here, bounded by some lucky guess value
+                let possibilities = "((<42><31>)";
+                for (let repetitions = 1; repetitions < 10; ++repetitions) {
+                    possibilities += `|((<42>){${repetitions}}(<31>){${repetitions}})`;
+                }
+                possibilities += ")";
+                return possibilities;
+            }
+        }
         return get_rule_no(index);
     }
 
@@ -87,10 +103,10 @@ export function parse_input(input: Array<string>): [Rules, Array<string>]
 }
 
 
-export function count_matches_in(input: Array<string>): number
+export function count_matches_in(input: Array<string>, include_part2_fixes: boolean = false): number
 {
     const [rules, strings_to_test] = parse_input(input);
-    const regexp = build_regexp_from(rules);
+    const regexp = build_regexp_from(rules, include_part2_fixes);
 
     let number_of_matches = 0;
     for (const to_test of strings_to_test) {
@@ -109,6 +125,8 @@ if (require.main === module) {
     const input = read_file_of_strings("input/day19");
 
     const number_of_matches = count_matches_in(input);
-
     console.log("Problem 1: ", number_of_matches);
+
+    const number_of_matches_pt2 = count_matches_in(input, true);
+    console.log("Problem 2: ", number_of_matches_pt2);
 }
