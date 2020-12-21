@@ -76,11 +76,21 @@ export class AllergenesInIngredients
         return { ingredients: ingredients, number_of_appearances: count };
     }
 
+    canonical_dangerous_ingredient_list(): string
+    {
+        const allergenes = [...this.contains.keys()];
+        const allergenes_sorted = allergenes.sort();
+
+        const ingredients = allergenes_sorted.map((allergene) => this.contains.get(allergene));
+        const list = ingredients.join(",");
+        return list;
+    }
+
 }
 
 
 
-export function find_allergene_free_ingredients(input: Array<string>): number
+export function find_allergene_free_ingredients(input: Array<string>): AllergenesInIngredients
 {
     const mapping = new AllergenesInIngredients();
 
@@ -94,14 +104,19 @@ export function find_allergene_free_ingredients(input: Array<string>): number
         mapping.add_information(ingredients, allergenes);
     }
 
-    const ingredients_without_allergenes = mapping.ingredients_without_allergenes();
-    return ingredients_without_allergenes.number_of_appearances;
+    return mapping;
 }
 
 
 
 if (require.main === module) {
     const input = read_file_of_strings("input/day21");
-    const count = find_allergene_free_ingredients(input);
+    const mapping = find_allergene_free_ingredients(input);
+
+    const ingredients_without_allergenes = mapping.ingredients_without_allergenes();
+    const count = ingredients_without_allergenes.number_of_appearances;
+
     console.log("Problem 1: ", count);
+
+    console.log("Problem 2: ", mapping.canonical_dangerous_ingredient_list());
 }

@@ -14,4 +14,6 @@ test("Mapping ", () => {
 
     expect(isEqual(no_allergenes.ingredients, new Set(["kfcds", "nhms", "sbzzf", "trh"]))).toBeTruthy();
     expect(no_allergenes.number_of_appearances).toBe(5);
+
+    expect(mapping.canonical_dangerous_ingredient_list()).toEqual("mxmxvkd,sqjhc,fvjkl");
 })
