@@ -6,17 +6,82 @@ export class Game
     cards_player1: Array<number>;
     cards_player2: Array<number>;
 
-    constructor(cards_player1: Array<number>, cards_player2: Array<number>)
+    is_with_recursion: boolean;
+    happened_before: boolean = false;
+
+    private player1_history: Set<string>;
+    winner: number = 0;  // 1,2: player, 0: unknown
+
+    constructor(cards_player1: Array<number>, cards_player2: Array<number>, is_with_recursion: boolean)
     {
+        this.is_with_recursion = is_with_recursion;
         this.cards_player1 = cards_player1;
         this.cards_player2 = cards_player2;
+        this.player1_history = new Set();
     }
 
     /**
-     * @returns true if the game is finished
+     * @returns true if the current situation has happened before
      */
+    private store_player1_state_and_check_whether_it_happened_before(): boolean
+    {
+        const player1_state_as_string = this.cards_player1.join(",");
+        if (this.player1_history.has(player1_state_as_string)) {
+            return true;
+        }
+        else {
+            this.player1_history.add(player1_state_as_string);
+            return false;
+        }
+    }
+
+    /**
+     * Play the game until there is a winner, sets `winner` to the winner.
+     * @return true if player 1 won, false if player 2 won.
+     */
+    play_game(): boolean
+    {
+        while (! this.is_finished())
+        {
+            this.play_one_round();
+        }
+
+        return this.determine_winner();
+    }
+
+    determine_winner(): boolean
+    {
+        if (this.happened_before) {
+            this.winner = 1;
+            return true;
+        }
+        else {
+            if (this.cards_player1.length === 0) {
+                this.winner = 2;
+                return false;
+            }
+            else if (this.cards_player2.length === 0) {
+                this.winner = 1;
+                return true;
+            }
+            else {
+                this.winner = 0;
+                throw new Error("Unable to determine winner.");
+            }
+        }
+
+    }
+
     play_one_round(): void
     {
+        if (this.is_with_recursion) {
+            this.happened_before = this.store_player1_state_and_check_whether_it_happened_before();
+            if (this.happened_before)
+            {
+                return;
+            }
+        }
+
         const value1 = this.cards_player1.shift();
         const value2 = this.cards_player2.shift();
 
@@ -24,7 +89,15 @@ export class Game
             throw new Error("Unable to play a round as one player does not have any more cards.");
         }
 
-        const player1_wins_round = value1 > value2;
+        let player1_wins_round: boolean;
+
+        if (this.is_with_recursion && (this.cards_player1.length >= value1) && (this.cards_player2.length >= value2)) {
+            player1_wins_round = this.play_recursive_game(value1, value2);
+        }
+        else {
+            player1_wins_round = value1 > value2;
+        }
+
         if (player1_wins_round) {
             this.cards_player1.push(value1);
             this.cards_player1.push(value2);
@@ -33,10 +106,26 @@ export class Game
             this.cards_player2.push(value2);
             this.cards_player2.push(value1);
         }
+    }
 
+    /**
+     * @returns true if player 1 wins, false if player 2 wins
+     */
+    play_recursive_game(value1: number, value2: number): boolean
+    {
+        const sub_game = new Game(
+            [...this.cards_player1.slice(0, value1)],
+            [...this.cards_player2.slice(0, value2)],
+            this.is_with_recursion
+        );
+        return sub_game.play_game();
     }
 
     is_finished(): boolean {
+        if (this.is_with_recursion && this.happened_before) {
+            return true;
+        }
+
         const is_game_finished = ((this.cards_player1.length === 0) || (this.cards_player2.length === 0));
         return is_game_finished;
     }
@@ -48,7 +137,8 @@ export class Game
         }
 
         let winning_cards: Array<number>;
-        if (this.cards_player1.length === 0) {
+        this.determine_winner();
+        if (this.winner == 2) {
             winning_cards = this.cards_player2;
         }
         else {
@@ -65,7 +155,7 @@ export class Game
 }
 
 
-function make_game_from_description(description: Array<string>): Game
+function make_game_from_description(description: Array<string>, recursive_game: boolean): Game
 {
     const cards = [new Array<number>(), new Array<number>()];
     let player = -1;
@@ -87,18 +177,19 @@ function make_game_from_description(description: Array<string>): Game
         }
     }
 
-    const game = new Game(cards[0], cards[1]);
+    const game = new Game(cards[0], cards[1], recursive_game);
     return game;
 }
 
 
 if (require.main === module) {
     const input = read_file_of_strings("input/day22");
-    const game = make_game_from_description(input);
 
-    while (! game.is_finished())
-    {
-        game.play_one_round();
-    }
-    console.log("Problem 1: ", game.winning_score());
+    const normal_game = make_game_from_description(input, false);
+    normal_game.play_game();
+    console.log("Problem 1: ", normal_game.winning_score());
+
+    const recursive_game = make_game_from_description(input, true);
+    recursive_game.play_game();
+    console.log("Problem 2: ", recursive_game.winning_score());
 }
