@@ -5,13 +5,12 @@ test("Example part 1", () => {
     const input = [3,8,9,1,2,5,4,6,7];
 
     const game = new CupGame(input);
-    game.play_steps(1);
 
-    expect(game.cups[game.index_current_cup]).toBe(2);
-    game.play_steps(1);
-    expect(game.cups[game.index_current_cup]).toBe(5);
-    game.play_steps(1);
-    expect(game.cups[game.index_current_cup]).toBe(8);
+    const current_values_for_some_steps = [3, 2, 5, 8, 4, 1, 9];
+    for (const value of current_values_for_some_steps) {
+        expect(game.current_cup.value).toBe(value);
+        game.play_steps(1);
+    }
 })
 
 test("Example part 1: final value", () => {

@@ -1,92 +1,140 @@
+class Cup
+{
+    value: number;
+    next: Cup;
 
+    constructor(value: number, next: Cup)
+    {
+        this.value = value;
+        this.next = next;
+    }
+}
 
 export class CupGame
 {
-    cups: Array<number>;
-    index_current_cup: number = 0;
+    cup_with_value = new Map<number, Cup>();
+    current_cup: Cup;
+    highest_value: number;
+    /** values missing between 1 and highest_value */
+    missing_values = new Set<number>();
 
-    constructor(cups: Array<number>)
+    constructor(cup_values: Array<number>)
     {
-        this.cups = [...cups];
+        const first_cup = new Cup(cup_values[0], null as unknown as Cup);  // first_cup is in invalid state now!
+        this.cup_with_value.set(cup_values[0], first_cup);
+
+        const last_value = cup_values[cup_values.length - 1];
+        const last_cup = new Cup(last_value, first_cup);
+        this.cup_with_value.set(last_value, last_cup);
+
+        let next_cup = last_cup;
+        for (let index = cup_values.length - 2; index >= 1; --index) {
+            const value = cup_values[index];
+            const cup = new Cup(value, next_cup);
+            this.cup_with_value.set(value, cup);
+            next_cup = cup;
+        }
+        first_cup.next = next_cup; // first_cup is valid now
+
+        this.current_cup = first_cup;
+
+        for (let assumed_contained_value = 1; assumed_contained_value <= cup_values.length; ++assumed_contained_value) {
+            if (! this.cup_with_value.has(assumed_contained_value)) {
+                this.missing_values.add(assumed_contained_value);
+            }
+        }
+
+        this.highest_value = cup_values.length;
     }
 
-    remove_three_cups_clockwise_of(index: number): Array<number>
+    /**
+     * @returns the first removed cup (which still points to the following cup -- the last of the three still points to the "old" next value!)
+     */
+    remove_three_cups_clockwise_of(cup: Cup): Cup
     {
-        const first_index_to_remove = (index + 1) % this.cups.length;
-        const last_index_to_remove = (index + 3) % this.cups.length;
+        const following_cup = cup.next;
+        const next_cup_to_keep = following_cup.next.next.next;
+        cup.next = next_cup_to_keep;
+        return following_cup;
+    }
 
-        if (first_index_to_remove < last_index_to_remove) {
-            const cups = this.cups.slice(first_index_to_remove, last_index_to_remove + 1);
-            this.cups = [...this.cups.slice(0, first_index_to_remove), ...this.cups.slice(last_index_to_remove + 1, this.cups.length)];
-            return cups;
+    insert_three_cups_clockwise_of(cup: Cup, first_of_the_three_cups: Cup): void
+    {
+        const following_cup = cup.next;
+        const last_of_the_three_cups = first_of_the_three_cups.next.next;
+        cup.next = first_of_the_three_cups;
+        last_of_the_three_cups.next = following_cup;
+    }
+
+    private pick_next_lower_value(value: number): number
+    {
+        let next_value = value - 1;
+        if (next_value === 0) {
+            return this.highest_value;
+        }
+        else if (this.missing_values.has(next_value)) {
+            return this.pick_next_lower_value(next_value);
         }
         else {
-            const cups = this.cups.slice(first_index_to_remove, this.cups.length);
-            this.cups = [...this.cups.slice(0, first_index_to_remove)];
-            while (cups.length < 3) {
-                cups.push(this.cups.shift()!);
-            }
-            return cups;
+            return next_value;
         }
+    };
+
+    determine_destination_cup(first_of_the_three_removed_cups: Cup): Cup
+    {
+        const unpickable_values = new Set([
+            first_of_the_three_removed_cups.value,
+            first_of_the_three_removed_cups.next.value,
+            first_of_the_three_removed_cups.next.next.value,
+        ]);
+
+
+        let value_of_destination_cup = this.pick_next_lower_value(this.current_cup.value);
+
+        while (unpickable_values.has(value_of_destination_cup)) {
+            value_of_destination_cup = this.pick_next_lower_value(value_of_destination_cup);
+        }
+
+        const destination_cup = this.cup_with_value.get(value_of_destination_cup);
+        if (destination_cup == null) {
+            throw new Error(`Unable to get destination cup with value ${value_of_destination_cup}.`);
+        }
+        return destination_cup;
     }
 
-    insert_three_cups_clockwise_of(index: number, cups: Array<number>): void
+    select_next_current_cup(): void
     {
-        if (cups.length !== 3) {
-            throw new Error(`Expected 3 cups, received ${cups.length}.`);
-        }
-
-        this.cups = [...this.cups.slice(0, index + 1), ...cups, ...this.cups.slice(index + 1, this.cups.length)];
-    }
-
-    determine_index_of_destination_cup(value_current_cup: number): number
-    {
-        let index_destination_cup = -1;
-        let value_destination_cup = value_current_cup - 1;
-        const min_value_in_cups = Math.min(...this.cups);
-        const max_value_in_cups = Math.max(...this.cups);
-        while (index_destination_cup === -1) {
-            index_destination_cup = this.cups.findIndex((value) => value === value_destination_cup);
-            value_destination_cup -= 1;
-            if (value_destination_cup < min_value_in_cups) {
-                value_destination_cup = max_value_in_cups;
-            }
-        }
-        return index_destination_cup;
-    }
-
-    select_next_current_cup(value_current_cup: number): void
-    {
-        // index may have changed due to insert
-        const index_current_cup = this.cups.findIndex((value) => value === value_current_cup);
-        const next_index = (index_current_cup + 1) % this.cups.length;
-        this.index_current_cup = next_index;
+        this.current_cup = this.current_cup.next;
     }
 
     play_steps(number_of_steps: number)
     {
         for (let step_number = 0; step_number < number_of_steps; ++step_number) {
-            const value_current_cup = this.cups[this.index_current_cup];
+            const removed_cups = this.remove_three_cups_clockwise_of(this.current_cup);
 
-            const removed_cups = this.remove_three_cups_clockwise_of(this.index_current_cup);
+            const destination_cup = this.determine_destination_cup(removed_cups);
 
-            const index_destination_cup = this.determine_index_of_destination_cup(value_current_cup);
+            this.insert_three_cups_clockwise_of(destination_cup, removed_cups);
 
-            this.insert_three_cups_clockwise_of(index_destination_cup, removed_cups);
-
-            this.select_next_current_cup(value_current_cup);
+            this.select_next_current_cup();
         }
     }
 
     cup_order(): string
     {
-        const index_of_one = this.cups.findIndex((value) => value === 1);
+        let cup = this.cup_with_value.get(1)!;
         let order_string = "";
-        for (let i = index_of_one + 1; i < index_of_one + this.cups.length; ++i) {
-            const index = i % this.cups.length;
-            order_string += this.cups[index].toString();
+        for (let i = 1; i < this.cup_with_value.size; ++i) {
+            cup = cup.next;
+            order_string += cup.value;
         }
         return order_string;
+    }
+
+    two_cups_clockwise_of_one(): [number, number]
+    {
+        const cup_one = this.cup_with_value.get(1)!;
+        return [cup_one.next.value, cup_one.next.next.value];
     }
 
 }
@@ -94,8 +142,22 @@ export class CupGame
 
 
 if (require.main === module) {
-    const input = [5,8,3,9,7,6,2,4,1];
-    const game = new CupGame(input);
-    game.play_steps(100);
-    console.log("Problem 1: ", game.cup_order());
+    const input_part1 = [5,8,3,9,7,6,2,4,1];
+    const game_part1 = new CupGame(input_part1);
+    game_part1.play_steps(100);
+    console.log("Problem 1: ", game_part1.cup_order());
+
+    const input_part2 = (function() {
+        const input = [...input_part1];
+        const highest_value = Math.max(...input);
+        input.push(highest_value + 1);
+        while (input[input.length - 1] != 1000000) {
+            input.push(input[input.length - 1] + 1);
+        }
+        return input;
+    })();
+    const game_part2 = new CupGame(input_part2);
+    game_part2.play_steps(10000000);
+    const [cup1, cup2] = game_part2.two_cups_clockwise_of_one();
+    console.log("Porblem 2: ", cup1 * cup2);
 }
