@@ -1,3 +1,4 @@
+import { find_value_not_sum_of_two_numbers_from_preceeding_block } from "./day09";
 import { read_empty_lines_separated_blocks } from "./read_file_utils";
 import { reverse_string } from "./string_utils";
 
@@ -157,10 +158,13 @@ function align_tile_such_that_border_is(tile: Tile, which_border: Direction, bor
 export class SquareGridOfTiles
 {
     readonly tiles_per_dimension: number;
+
     /** Number of "pixels" in a single tile in x and y direction */
     readonly tile_length: number;
+
     /** number of "pixels" in x and y direction */
     readonly edge_length: number;
+
     /** (square) matrix of tiles */
     readonly tiles: Array<Array<Tile>>;
 
@@ -230,7 +234,6 @@ export class SquareGridOfTiles
         }
     }
 
-
     data_at(row: number, column: number): boolean
     {
         if ((row < 0) || (row >= this.edge_length)) {
@@ -256,6 +259,144 @@ export class SquareGridOfTiles
         }
     }
 }
+
+
+export class MonsterFinder {
+
+    static monster_indices_template: Array<[number, number]> = [
+        [0, 18],
+        [1, 0],
+        [1, 5],
+        [1, 6],
+        [1, 11],
+        [1, 12],
+        [1, 17],
+        [1, 18],
+        [1, 19],
+        [2, 1],
+        [2, 4],
+        [2, 7],
+        [2, 10],
+        [2, 13],
+        [2, 16],
+    ];
+
+    /**
+     * [row,column] tuples indicating positions where the monster is set -- all
+     * values are >= 0, monster "upper left" edge is at (0, 0).
+     */
+    monster_indices = [...MonsterFinder.monster_indices_template];
+
+    rotate_left(): void
+    {
+        const rotated_positions = new Array<[number, number]>();
+
+        const monster_max_col = this.max_coordinates()[1];
+        for (const [row, col] of this.monster_indices) {
+            rotated_positions.push([monster_max_col - col, row]);
+        }
+
+        this.monster_indices = rotated_positions;
+    }
+
+    /** flip horizontally */
+    flip(): void
+    {
+        const flipped_positions = new Array<[number, number]>();
+
+        const monster_max_col = this.max_coordinates()[1];
+        for (const [row, col] of this.monster_indices) {
+            flipped_positions.push([row, monster_max_col - col]);
+        }
+
+        this.monster_indices = flipped_positions;
+    }
+
+    private max_coordinates(): [number, number]
+    {
+        const [monster_max_row, monster_max_col] = this.monster_indices.reduce(
+            (previous, coordinate) => [Math.max(previous[0], coordinate[0]), Math.max(previous[1], coordinate[1])],
+            [0, 0]
+        );
+        return [monster_max_row, monster_max_col];
+    }
+
+    find_monsters(grid: SquareGridOfTiles) : Set<[number, number]>
+    {
+        const monster_at_coordinates = new Set<[number, number]>();
+
+        const [monster_max_row, monster_max_col] = this.max_coordinates();
+
+        for (let search_window_col = 0; search_window_col < grid.edge_length - monster_max_col; ++search_window_col) {
+            for (let search_window_row = 0; search_window_row < grid.edge_length - monster_max_row; ++search_window_row) {
+                // find the indices for this monster
+                const this_monster_coordinates = new Array<[number, number]>();
+                for (const relative_monster_position of this.monster_indices) {
+                    const row = search_window_row + relative_monster_position[0];
+                    const col = search_window_col + relative_monster_position[1];
+                    this_monster_coordinates.push([row, col]);
+                }
+                // check whether there is a monster
+                let is_monster = true;
+                for (const [row, col] of this_monster_coordinates)
+                {
+                    if (grid.data_at(row, col)) {
+                        continue;
+                    }
+                    else {
+                        is_monster = false;
+                        break;
+                    }
+                }
+                // and if so, mark the pixels
+                if (is_monster) {
+                    for (const coordinate of this_monster_coordinates) {
+                        monster_at_coordinates.add(coordinate);
+                    }
+                }
+            }
+        }
+
+        return monster_at_coordinates;
+    }
+}
+
+
+export function find_monsters_in_all_possible_orientations(grid: SquareGridOfTiles): Set<[number, number]>
+{
+    const finder = new MonsterFinder();
+
+    const findings_for_all_possible_orientations = new Array<ReturnType<typeof finder.find_monsters>>();
+
+    for (let i = 0; i < 8; ++i) {
+        if (i === 4) {
+            finder.flip();
+        }
+        findings_for_all_possible_orientations.push(finder.find_monsters(grid));
+        finder.rotate_left();
+    }
+
+    let relevant_findings: Set<[number, number]> | undefined = undefined;
+    let found_the_one_good_orientation = false;
+    for (const finding of findings_for_all_possible_orientations) {
+        if (finding.size !== 0) {
+            if (found_the_one_good_orientation) {
+                throw new Error("Already got findings for a different orientation.");
+            }
+            else {
+                found_the_one_good_orientation = true;
+                relevant_findings = finding;
+            }
+        }
+    }
+
+    if (relevant_findings == undefined) {
+        throw new Error("Unable to find Sea Monsters for any orientation.");
+    }
+
+    return relevant_findings;
+}
+
 
 
 function parse_tiles(input: Array<Array<string>>): Array<Tile>
@@ -320,4 +461,21 @@ if (require.main === module) {
         throw new Error(`Got more than just 4 tiles with only two matches: ${possible_corners?.length}.`);
     }
 
+
+    const top_left = possible_corners[0];
+    const grid = new SquareGridOfTiles(top_left, tiles);
+    const monster_coordinates = find_monsters_in_all_possible_orientations(grid);
+    const number_of_occupied_pixels = (function () {
+        let num_occupied = 0;
+        for (let row = 0; row < grid.edge_length; ++row) {
+            for (let col = 0; col < grid.edge_length; ++col) {
+                if (grid.data_at(row, col)) {
+                    num_occupied += 1;
+                }
+            }
+        }
+        return num_occupied;
+    })();
+    const occupied_and_not_part_of_monster = number_of_occupied_pixels - monster_coordinates.size;
+    console.log("Problem 2: ", occupied_and_not_part_of_monster);
 }

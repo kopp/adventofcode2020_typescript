@@ -1,4 +1,4 @@
-import { hash_border, Tile, SquareGridOfTiles } from "../src/day20";
+import { hash_border, Tile, SquareGridOfTiles, MonsterFinder } from "../src/day20";
 
 
 test("hash", () => {
@@ -40,8 +40,8 @@ test("Tile: rotate", () => {
 });
 
 
-test("Grid", () => {
-
+function make_grid_from_example(): SquareGridOfTiles
+{
     const tiles = [
         new Tile([
             "Tile 2311:",
@@ -199,6 +199,41 @@ test("Grid", () => {
 
     const grid = new SquareGridOfTiles(top_left, tiles);
 
+    return grid;
+}
+
+
+test("Grid", () => {
+
+    const expected_data = [
+        ".#.#..#.##...#.##..#####",
+        "###....#.#....#..#......",
+        "##.##.###.#.#..######...",
+        "###.#####...#.#####.#..#",
+        "##.#....#.##.####...#.##",
+        "...########.#....#####.#",
+        "....#..#...##..#.#.###..",
+        ".####...#..#.....#......",
+        "#..#.##..#..###.#.##....",
+        "#.####..#.####.#.#.###..",
+        "###.#.#...#.######.#..##",
+        "#.####....##..########.#",
+        "##..##.#...#...#.#.#.#..",
+        "...#..#..#.#.##..###.###",
+        ".#.#....#.##.#...###.##.",
+        "###.#...#..#.##.######..",
+        ".#.#.###.##.##.#..#.##..",
+        ".####.###.#...###.#..#.#",
+        "..#.#..#..#.#.#.####.###",
+        "#..####...#.#.#.###.###.",
+        "#####..#####...###....##",
+        "#.##..#..#...#..####...#",
+        ".#.###..##..##..####.##.",
+        "...###...##...#...#..###",
+    ];
+
+    const grid = make_grid_from_example();
+
     expect(grid.tiles[0][0].id).toBe(1951);
     expect(grid.tiles[0][1].id).toBe(2311);
     expect(grid.tiles[0][2].id).toBe(3079);
@@ -214,5 +249,28 @@ test("Grid", () => {
             expect(grid.data_at(row, col)).toBe(expected_data[row][col] === "#");
         }
     }
+
+});
+
+
+test("Monster Finder", () => {
+    const grid = make_grid_from_example();
+    const finder = new MonsterFinder();
+
+    const findings_for_all_possible_orientations = new Array<ReturnType<typeof finder.find_monsters>>();
+    for (let i = 0; i < 8; ++i) {
+        if (i === 4) {
+            finder.flip();
+        }
+        findings_for_all_possible_orientations.push(finder.find_monsters(grid));
+        finder.rotate_left();
+    }
+
+    expect(findings_for_all_possible_orientations.length).toBe(8);
+
+    const num_zero_findings = findings_for_all_possible_orientations.reduce((prev, found_coordinates) => found_coordinates.size === 0 ? prev + 1 : prev, 0);
+    const total_num_coordinates = findings_for_all_possible_orientations.reduce((prev, found_coordinates) => prev + found_coordinates.size, 0);
+    expect(num_zero_findings).toBe(7); // only findings in one orientation
+    expect(total_num_coordinates).toBe(30); // two monsters
 
 });
